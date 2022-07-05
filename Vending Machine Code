@@ -1,0 +1,34 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.11;
+
+contract VendingMachine {
+
+    // state variables
+    address public owner;
+    mapping (address => uint) public paperboatBalances;
+
+    // set the owner as th address that deployed the contract
+    // set the initial vending machine balance to 100
+    constructor() {
+        owner = msg.sender;
+        paperboatBalances[address(this)] = 100;
+    }
+
+    function getVendingMachineBalance() public view returns (uint) {
+        return paperboatBalances[address(this)];
+    }
+
+    // Let the owner restock the vending machine
+    function restock(uint amount) public {
+        require(msg.sender == owner, "Only the owner can restock.");
+        paperboatBalances[address(this)] += amount;
+    }
+
+    // Purchase paperboats from the vending machine
+    function purchase(uint amount) public payable {
+        require(msg.value >= amount * 1.75 ether, "You must pay at least 1.75 ETH per paperboat");
+        require(paperboatBalances[address(this)] >= amount, "Not enough paperboats in stock to complete this purchase");
+        paperboatBalances[address(this)] -= amount;
+        paperboatBalances[msg.sender] += amount;
+    }
+}
