@@ -3,12 +3,12 @@ pragma solidity ^0.8.11;
 
 contract VendingMachine {
 
-    // state variables
+    // State variables
     address public owner;
     mapping (address => uint) public paperboatBalances;
 
-    // set the owner as th address that deployed the contract
-    // set the initial vending machine balance to 100
+    // Set the owner as the address that deployed the contract
+    // Set the initial vending machine balance to 100
     constructor() {
         owner = msg.sender;
         paperboatBalances[address(this)] = 100;
@@ -30,5 +30,15 @@ contract VendingMachine {
         require(paperboatBalances[address(this)] >= amount, "Not enough paperboats in stock to complete this purchase");
         paperboatBalances[address(this)] -= amount;
         paperboatBalances[msg.sender] += amount;
+    }
+
+    // Allow the owner to withdraw excess ether
+    function withdrawExcessEther() public {
+        require(msg.sender == owner, "Only the owner can withdraw excess ether");
+        uint contractBalance = address(this).balance;
+        uint vendingMachineBalance = paperboatBalances[address(this)] * 1.75 ether;
+        uint excessBalance = contractBalance - vendingMachineBalance;
+        require(excessBalance > 0, "No excess balance to withdraw");
+        payable(owner).transfer(excessBalance);
     }
 }
