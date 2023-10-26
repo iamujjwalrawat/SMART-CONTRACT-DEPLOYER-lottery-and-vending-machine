@@ -1,5 +1,3 @@
-// SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.11;
 
 contract Lottery {
@@ -36,19 +34,31 @@ contract Lottery {
         return uint(keccak256(abi.encodePacked(owner, block.timestamp)));
     }
 
-    function pickWinner() public onlyowner {
+    function pickWinner() public onlyOwner {
+        require(players.length > 0, "No players in the current lottery.");
         uint index = getRandomNumber() % players.length;
         players[index].transfer(address(this).balance);
 
         lotteryHistory[lotteryId] = players[index];
         lotteryId++;
         
-
-        // reset the state of the contract
-        players = new address payable[](0);
+        // Reset the state of the contract
+        delete players;
     }
 
-    modifier onlyowner() {
+    function endLottery() public onlyOwner {
+        require(players.length > 0, "No players in the current lottery.");
+        uint index = getRandomNumber() % players.length;
+        players[index].transfer(address(this).balance);
+
+        lotteryHistory[lotteryId] = players[index];
+        lotteryId++;
+        
+        // Start a new lottery
+        delete players;
+    }
+
+    modifier onlyOwner() {
       require(msg.sender == owner);
       _;
     }
